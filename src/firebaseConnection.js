@@ -15,6 +15,7 @@ let firebaseConfig = {
   
   // Initialize Firebase
   if(!firebase.apps.length){
+    //abrir minha conexão
     firebase.initializeApp(firebaseConfig);
   }
 //const app = initializeApp(firebaseConfig);
