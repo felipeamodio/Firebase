@@ -1,52 +1,76 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import firebase from './src/firebaseConnection'; 
 
 export default function App() {
   const [nome, setNome] = useState('Carregando...');
-  const [userNome, setUserNome] = useState('Carregando...');
-  const [userIdade, setUserIdade] = useState('Carregando...');
+  const [userNome, setUserNome] = useState('');
+  const [userIdade, setUserIdade] = useState('');
+  const [cargo, setCargo] = useState('');
 
   useEffect(() => {
     //o firebase é algo assincrono e por isso pede uma requisição async
     async function dados(){
-      await firebase.database().ref('nome').on('value', (snapshot) => {
-        setNome(snapshot.val());
-      })
-    }
+      //criando um nó
+      //await firebase.database().ref('tipo').set('Vendedor'); 
 
-    async function dadosNome(){
-      await firebase.database().ref('usuarios/2/nome').on('value', (snapshot) => {
-        setUserNome(snapshot.val());
-      })
-    }
+      //removendo um nó
+      //await firebase.database().ref('tipo').remove();
 
-    async function dadosIdade(){
-      await firebase.database().ref('usuarios/2/idade').on('value', (snapshot) => {
-        setUserIdade(snapshot.val());
-      })
-    }
+      //inserindo um usuário novo dentro de cada child
+      // await firebase.database().ref('usuarios').child(3).set({
+      //   nome: 'Tony',
+      //   idade: 2
+      // })
 
-    //poderia fazer assim pra puxar todos os childs
-    async function infosUser(){
-      await firebase.database().ref('usuarios/1').on('value', (snapshot) => {
-        setUserNome(snapshot.val().nome);
-        setUserIdade(snapshot.val().idade);
-      })
+      //não gerar conflito ao atualizar um campo e o outro não
+      // await firebase.database().ref('usuarios').child(3).update({
+      //   idade: 1.9 
+      // })
     }
 
     dados();
-    dadosNome();
-    dadosIdade();
+    // dadosNome();
+    // dadosIdade();
     // infosUser();
 
   }, []);
 
+  async function cadastrar(){
+    if(userNome !== '' & cargo !== ''){
+      let usuarios = await firebase.database().ref('usuarios');
+      let chave = usuarios.push().key;
+
+      usuarios.child(chave).set({
+        nome: userNome,
+        cargo: cargo
+      })
+    }
+
+    alert('Cadastrado com sucesso')
+    setCargo('');
+    setUserNome('');
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={{fontSize: 25}}>Olá, {nome}</Text>
-      <Text style={{fontSize: 25, marginTop: 40}}>Nome: {userNome}</Text>
-      <Text style={{fontSize: 25, marginTop: 15}}>Idade: {userIdade}</Text>
+      <Text style={styles.texto}>Nome:</Text>
+      <TextInput 
+        style={styles.input}
+        onChangeText={(texto) => setUserNome(texto)}
+        value={userNome}
+      />
+
+      <Text style={[styles.texto, {marginTop: 40}]}>Cargo:</Text>
+      <TextInput 
+        style={styles.input}
+        onChangeText={(texto) => setCargo(texto)}
+        value={cargo}
+      />
+
+      <TouchableOpacity style={styles.button} activeOpacity={0.7} onPress={cadastrar}>
+        <Text style={styles.textButton}>Novo Funcionário</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -54,8 +78,34 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    justifyContent: 'center',
+    margin: 20
+  },
+  texto: {
+    fontSize: 24,
+    fontWeight: '800'
+  },
+  input: {
+    marginBottom: 10,
+    padding: 10,
+    borderWidth: 0.8,
+    borderColor: '#121212',
+    borderRadius: 8,
+    marginTop: 15,
+    height: 45,
+    fontSize: 17
+  },
+  button: {
+    backgroundColor: '#0000FF',
+    height: 45,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 8,
+    marginTop: 50
   },
+  textButton: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: 'bold'
+  }
 });
