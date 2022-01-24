@@ -25,3 +25,21 @@ async function dados(){
       setUserIdade(snapshot.val().idade);
     })
   }
+
+  // anotações segunda aula
+  //criando um nó
+      await firebase.database().ref('tipo').set('Vendedor'); 
+
+      //removendo um nó
+      await firebase.database().ref('tipo').remove();
+
+      //inserindo um usuário novo dentro de cada child
+      await firebase.database().ref('usuarios').child(3).set({
+        nome: 'Tony',
+        idade: 2
+      })
+
+      //não gerar conflito ao atualizar um campo e o outro não
+      await firebase.database().ref('usuarios').child(3).update({
+        idade: 1.9 
+      })

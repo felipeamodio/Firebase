@@ -1,32 +1,31 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView, FlatList, ActivityIndicator } from 'react-native';
 import firebase from './src/firebaseConnection'; 
+import Listagem from './src/Listagem';
 
 export default function App() {
   const [nome, setNome] = useState('Carregando...');
   const [userNome, setUserNome] = useState('');
   const [userIdade, setUserIdade] = useState('');
   const [cargo, setCargo] = useState('');
+  const [usuarios, setUsuarios] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     //o firebase é algo assincrono e por isso pede uma requisição async
     async function dados(){
-      //criando um nó
-      //await firebase.database().ref('tipo').set('Vendedor'); 
-
-      //removendo um nó
-      //await firebase.database().ref('tipo').remove();
-
-      //inserindo um usuário novo dentro de cada child
-      // await firebase.database().ref('usuarios').child(3).set({
-      //   nome: 'Tony',
-      //   idade: 2
-      // })
-
-      //não gerar conflito ao atualizar um campo e o outro não
-      // await firebase.database().ref('usuarios').child(3).update({
-      //   idade: 1.9 
-      // })
+      await firebase.database().ref('usuarios').on('value', (snapshot) => {
+        setUsuarios([]);
+        snapshot.forEach((childItem) =>  {
+          let data = {
+            key: childItem.key,
+            nome: childItem.val().userNome,
+            cargo: childItem.val().cargo
+          }
+          setUsuarios(oldArray => [...oldArray, data].reverse())
+        })
+        setLoading(false);
+      })
     }
 
     dados();
@@ -53,7 +52,7 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.texto}>Nome:</Text>
       <TextInput 
         style={styles.input}
@@ -71,14 +70,24 @@ export default function App() {
       <TouchableOpacity style={styles.button} activeOpacity={0.7} onPress={cadastrar}>
         <Text style={styles.textButton}>Novo Funcionário</Text>
       </TouchableOpacity>
-    </View>
+
+        {loading ? (
+          <ActivityIndicator color='#121212' size={45} />
+        ) :
+        ( <FlatList 
+            keyExtractor={item => item.key}
+            data={usuarios}
+            renderItem={({item}) => ( <Listagem data={item} /> )}
+          />
+        )
+        }
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     margin: 20
   },
   texto: {
