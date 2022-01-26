@@ -22,6 +22,12 @@ export default function App() {
     setPassword('');
   }
 
+  async function logout(){
+    await firebase.auth().signOut();
+    setUser('');
+    alert('Deslogado com sucesso')
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.texto}>Email:</Text>
@@ -44,6 +50,21 @@ export default function App() {
       </TouchableOpacity>
 
       <Text style={{fontSize: 20, marginTop: 20, textAlign: 'center'}}>{user}</Text>
+
+    {
+      user.length > 0
+      ?
+      (
+        <TouchableOpacity style={[styles.button, {backgroundColor: '#FF0000', marginTop: 50}]} activeOpacity={0.7} onPress={logout}>
+          <Text style={styles.textButton}>Logout</Text>
+        </TouchableOpacity>
+      )
+      :
+      (
+        <Text>Nenhum usuário logado</Text>
+      )
+    }
+
     </SafeAreaView>
   );
 }
