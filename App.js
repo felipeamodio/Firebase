@@ -5,25 +5,18 @@ import firebase from './src/firebaseConnection';
 export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [user, setUser] = useState('');
   
 
-  async function cadastrar(){
-    await firebase.auth().createUserWithEmailAndPassword(email, password)
+  async function logar(){
+    await firebase.auth().signInWithEmailAndPassword(email, password)
     .then((value) => {
-      alert('Usuário criado: ' + value.user.email)
+      alert('Bem-vindo ' + value.user.email)
+      setUser(value.user.email)
     })
     .catch((error) => {
-      if(error.code === 'auth/weak-password'){
-        alert('Sua senha deve ter pelo menos 6 caracteres')
-        return;
-      }
-      if(error.code === 'auth/invalid-email'){
-        alert('Email inválido')
-        return;
-      }else{
-        alert('Ops, algo deu errado')
-        return;
-      }
+      alert('Ops, algo deu errado')
+      return;
     })
     setEmail('');
     setPassword('');
@@ -46,9 +39,11 @@ export default function App() {
         value={password}
       />
 
-      <TouchableOpacity style={styles.button} activeOpacity={0.7} onPress={cadastrar}>
-        <Text style={styles.textButton}>Cadastrar</Text>
+      <TouchableOpacity style={styles.button} activeOpacity={0.7} onPress={logar}>
+        <Text style={styles.textButton}>Acessar</Text>
       </TouchableOpacity>
+
+      <Text style={{fontSize: 20, marginTop: 20, textAlign: 'center'}}>{user}</Text>
     </SafeAreaView>
   );
 }
