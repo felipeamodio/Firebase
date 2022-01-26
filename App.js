@@ -1,86 +1,54 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView, FlatList, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
 import firebase from './src/firebaseConnection'; 
-import Listagem from './src/Listagem';
 
 export default function App() {
-  const [nome, setNome] = useState('Carregando...');
-  const [userNome, setUserNome] = useState('');
-  const [userIdade, setUserIdade] = useState('');
-  const [cargo, setCargo] = useState('');
-  const [usuarios, setUsuarios] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    //o firebase é algo assincrono e por isso pede uma requisição async
-    async function dados(){
-      await firebase.database().ref('usuarios').on('value', (snapshot) => {
-        setUsuarios([]);
-        snapshot.forEach((childItem) =>  {
-          let data = {
-            key: childItem.key,
-            nome: childItem.val().userNome,
-            cargo: childItem.val().cargo
-          }
-          setUsuarios(oldArray => [...oldArray, data].reverse())
-        })
-        setLoading(false);
-      })
-    }
-
-    dados();
-    // dadosNome();
-    // dadosIdade();
-    // infosUser();
-
-  }, []);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
 
   async function cadastrar(){
-    if(userNome !== '' & cargo !== ''){
-      let usuarios = await firebase.database().ref('usuarios');
-      let chave = usuarios.push().key;
-
-      usuarios.child(chave).set({
-        nome: userNome,
-        cargo: cargo
-      })
-    }
-
-    alert('Cadastrado com sucesso')
-    setCargo('');
-    setUserNome('');
+    await firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then((value) => {
+      alert('Usuário criado: ' + value.user.email)
+    })
+    .catch((error) => {
+      if(error.code === 'auth/weak-password'){
+        alert('Sua senha deve ter pelo menos 6 caracteres')
+        return;
+      }
+      if(error.code === 'auth/invalid-email'){
+        alert('Email inválido')
+        return;
+      }else{
+        alert('Ops, algo deu errado')
+        return;
+      }
+    })
+    setEmail('');
+    setPassword('');
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.texto}>Nome:</Text>
+      <Text style={styles.texto}>Email:</Text>
       <TextInput 
         style={styles.input}
-        onChangeText={(texto) => setUserNome(texto)}
-        value={userNome}
+        onChangeText={(texto) => setEmail(texto)}
+        value={email}
+        
       />
 
-      <Text style={[styles.texto, {marginTop: 40}]}>Cargo:</Text>
+      <Text style={[styles.texto, {marginTop: 40}]}>Senha:</Text>
       <TextInput 
         style={styles.input}
-        onChangeText={(texto) => setCargo(texto)}
-        value={cargo}
+        onChangeText={(texto) => setPassword(texto)}
+        value={password}
       />
 
       <TouchableOpacity style={styles.button} activeOpacity={0.7} onPress={cadastrar}>
-        <Text style={styles.textButton}>Novo Funcionário</Text>
+        <Text style={styles.textButton}>Cadastrar</Text>
       </TouchableOpacity>
-
-        {loading ? (
-          <ActivityIndicator color='#121212' size={45} />
-        ) :
-        ( <FlatList 
-            keyExtractor={item => item.key}
-            data={usuarios}
-            renderItem={({item}) => ( <Listagem data={item} /> )}
-          />
-        )
-        }
     </SafeAreaView>
   );
 }
